@@ -1,0 +1,24 @@
+{
+  "name": "folding-bike",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "folding-bike-ui",
+    "folding-bike-manage",
+    "packages/*"
+  ],
+  "scripts": {
+    "db:generate": "npm run -w @folding-bike/db generate",
+    "db:push": "npm run -w @folding-bike/db push",
+    "db:migrate": "npm run -w @folding-bike/db migrate",
+    "db:studio": "npm run -w @folding-bike/db studio",
+    "db:seed": "npm run -w @folding-bike/db seed",
+    "dev:ui": "npm run -w folding-bike-ui dev",
+    "dev:manage": "npm run -w folding-bike-manage dev",
+    "build:ui": "npm run -w folding-bike-ui build",
+    "build:manage": "npm run -w folding-bike-manage build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

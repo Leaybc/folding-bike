@@ -1,0 +1,79 @@
+// Folding Bike — shared schema for both ui and manage apps.
+// Money fields are stored as integers in 元 (yuan, whole units). Weight is in 克 (grams).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Neon 的 Vercel 集成会注入：
+  //   DATABASE_URL           — 池化连接（pooler，serverless 用）
+  //   DATABASE_URL_UNPOOLED  — 直连，用于 prisma migrate
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  parts     Part[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model Part {
+  id         String      @id @default(cuid())
+  categoryId String
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  brand      String
+  name       String
+  costPrice  Int
+  sellPrice  Int
+  weight     Int
+  note       String?
+  active     Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([active])
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  customerName String
+  phone        String
+  wechat       String?
+  note         String?
+  totalSell    Int
+  totalCost    Int
+  profit       Int
+  totalWeight  Int
+  items        OrderItem[]
+  createdAt    DateTime    @default(now())
+
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  partId       String?
+  part         Part?   @relation(fields: [partId], references: [id], onDelete: SetNull)
+  // Snapshot fields — preserve order history even if the part is later edited or deleted.
+  categoryName String
+  brand        String
+  name         String
+  costPrice    Int
+  sellPrice    Int
+  weight       Int
+
+  @@index([orderId])
+  @@index([partId])
+}
