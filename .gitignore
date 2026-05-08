@@ -12,3 +12,6 @@ dist/
 coverage/
 prisma/migrations/dev.db*
 .waylog/
+
+.vercel
+.env*.local
