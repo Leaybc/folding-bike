@@ -2,8 +2,10 @@ import { prisma } from "@folding-bike/db";
 import { Configurator } from "@/components/configurator";
 import type { CategoryWithPartsDTO } from "@/lib/types";
 
-// Always fetch fresh — admin changes should reflect immediately.
-export const dynamic = "force-dynamic";
+// ISR：配件列表缓存 60s，命中时跳过数据库查询，只算 CDN 静态响应。
+// 管理端改完最多 60s 内全网用户都能看到。如需即时刷新，由 manage 端调
+// /api/revalidate （见下文）。
+export const revalidate = 60;
 
 async function loadCategories(): Promise<CategoryWithPartsDTO[]> {
   const categories = await prisma.category.findMany({

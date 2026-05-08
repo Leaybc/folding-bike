@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,7 +76,13 @@ function LoginForm() {
           autoFocus
         />
       </div>
-      <Button type="submit" className="w-full" disabled={submitting}>
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={submitting}
+        aria-busy={submitting}
+      >
+        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
         {submitting ? "登录中…" : "登录"}
       </Button>
     </form>

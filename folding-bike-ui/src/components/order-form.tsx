@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,7 +130,14 @@ export function OrderForm({
         <Textarea id="note" name="note" rows={3} placeholder="任何额外的需求或说明" />
       </div>
 
-      <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={submitting}
+        aria-busy={submitting}
+      >
+        {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
         {submitting ? "提交中…" : "确认提交"}
       </Button>
     </form>
