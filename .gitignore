@@ -11,3 +11,4 @@ dist/
 .turbo
 coverage/
 prisma/migrations/dev.db*
+.waylog/
