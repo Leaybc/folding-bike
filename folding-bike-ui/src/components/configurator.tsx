@@ -223,23 +223,6 @@ function PartList({
         </Button>
       )}
 
-      {/* 默认 "其他" 选项 — 价格 0、不入库 */}
-      <button
-        type="button"
-        onClick={() => onPick({ kind: "other" })}
-        className={`flex w-full items-start justify-between gap-3 rounded-md border p-3 text-left active:bg-accent ${
-          otherActive ? "border-primary bg-primary/5" : ""
-        }`}
-      >
-        <div className="min-w-0 flex-1">
-          <div className="font-medium">其他</div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            该分类不计入价格
-          </div>
-        </div>
-        <div className="font-semibold text-muted-foreground">¥0</div>
-      </button>
-
       {parts.map((p) => (
         <button
           key={p.id}
@@ -264,6 +247,23 @@ function PartList({
           </div>
         </button>
       ))}
+
+      {/* 默认 "其他" 选项 — 价格 0、不入库，放最底部 */}
+      <button
+        type="button"
+        onClick={() => onPick({ kind: "other" })}
+        className={`flex w-full items-start justify-between gap-3 rounded-md border p-3 text-left active:bg-accent ${
+          otherActive ? "border-primary bg-primary/5" : ""
+        }`}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="font-medium">其他</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            该分类不计入价格
+          </div>
+        </div>
+        <div className="font-semibold text-muted-foreground">¥0</div>
+      </button>
     </div>
   );
 }
