@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
-import type { CategoryWithPartsDTO, SelectionMap } from "@/lib/types";
+import type { CategoryWithPartsDTO, Selection, SelectionMap } from "@/lib/types";
 import { formatYuan, formatWeight } from "@/lib/utils";
 
 type Totals = { count: number; price: number; weight: number };
+
+type ItemRow = {
+  categoryId: string;
+  categoryName: string;
+  sel: Selection;
+};
 
 export function OrderForm({
   selection,
@@ -25,14 +31,14 @@ export function OrderForm({
   const [submitting, setSubmitting] = React.useState(false);
   const toast = useToast();
 
-  const items = React.useMemo(
+  const items: ItemRow[] = React.useMemo(
     () =>
       categories
         .map((c) => {
-          const p = selection[c.id];
-          return p ? { categoryId: c.id, categoryName: c.name, part: p } : null;
+          const sel = selection[c.id];
+          return sel ? { categoryId: c.id, categoryName: c.name, sel } : null;
         })
-        .filter((x): x is NonNullable<typeof x> => x !== null),
+        .filter((x): x is ItemRow => x !== null),
     [selection, categories],
   );
 
@@ -45,7 +51,11 @@ export function OrderForm({
       phone: String(form.get("phone") ?? "").trim(),
       wechat: String(form.get("wechat") ?? "").trim() || null,
       note: String(form.get("note") ?? "").trim() || null,
-      items: items.map((i) => ({ partId: i.part.id })),
+      items: items.map((i) =>
+        i.sel.kind === "part"
+          ? { kind: "part" as const, partId: i.sel.part.id }
+          : { kind: "other" as const, categoryId: i.categoryId },
+      ),
     };
 
     if (!payload.customerName) {
@@ -88,10 +98,14 @@ export function OrderForm({
             <li key={i.categoryId} className="flex justify-between gap-3">
               <span className="min-w-0 truncate">
                 <span className="text-muted-foreground">{i.categoryName}：</span>
-                {i.part.brand} {i.part.name}
+                {i.sel.kind === "part"
+                  ? `${i.sel.part.brand} ${i.sel.part.name}`
+                  : "其他"}
               </span>
               <span className="shrink-0 font-medium">
-                {formatYuan(i.part.sellPrice)}
+                {i.sel.kind === "part"
+                  ? formatYuan(i.sel.part.sellPrice)
+                  : "¥0"}
               </span>
             </li>
           ))}

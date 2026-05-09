@@ -9,7 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import type { CategoryWithPartsDTO, PartDTO, SelectionMap } from "@/lib/types";
+import type {
+  CategoryWithPartsDTO,
+  PartDTO,
+  Selection,
+  SelectionMap,
+} from "@/lib/types";
 import { formatYuan, formatWeight } from "@/lib/utils";
 import { OrderForm } from "@/components/order-form";
 
@@ -28,17 +33,19 @@ export function Configurator({
     let count = 0;
     let price = 0;
     let weight = 0;
-    for (const part of Object.values(selection)) {
-      if (!part) continue;
+    for (const sel of Object.values(selection)) {
+      if (!sel) continue;
       count += 1;
-      price += part.sellPrice;
-      weight += part.weight;
+      if (sel.kind === "part") {
+        price += sel.part.sellPrice;
+        weight += sel.part.weight;
+      }
     }
     return { count, price, weight };
   }, [selection]);
 
-  const handlePick = (categoryId: string, part: PartDTO | undefined) => {
-    setSelection((prev) => ({ ...prev, [categoryId]: part }));
+  const handlePick = (categoryId: string, sel: Selection | undefined) => {
+    setSelection((prev) => ({ ...prev, [categoryId]: sel }));
     setOpenCategory(null);
   };
 
@@ -113,8 +120,8 @@ export function Configurator({
             </DialogHeader>
             <PartList
               parts={openCategory.parts}
-              currentId={selection[openCategory.id]?.id}
-              onPick={(p) => handlePick(openCategory.id, p)}
+              current={selection[openCategory.id]}
+              onPick={(sel) => handlePick(openCategory.id, sel)}
               onClear={() => handlePick(openCategory.id, undefined)}
             />
           </DialogContent>
@@ -150,7 +157,7 @@ function CategoryRow({
   onClick,
 }: {
   category: CategoryWithPartsDTO;
-  selected: PartDTO | undefined;
+  selected: Selection | undefined;
   onClick: () => void;
 }) {
   return (
@@ -163,22 +170,29 @@ function CategoryRow({
         <div className="min-w-0">
           <div className="text-sm text-muted-foreground">{category.name}</div>
           {selected ? (
-            <div className="mt-0.5 truncate font-medium">
-              {selected.brand} · {selected.name}
-            </div>
+            selected.kind === "part" ? (
+              <div className="mt-0.5 truncate font-medium">
+                {selected.part.brand} · {selected.part.name}
+              </div>
+            ) : (
+              <div className="mt-0.5 font-medium">其他</div>
+            )
           ) : (
             <div className="mt-0.5 text-muted-foreground">
               {category.parts.length > 0
                 ? `${category.parts.length} 个可选`
-                : "暂无配件"}
+                : "可选「其他」"}
             </div>
           )}
         </div>
         <div className="ml-3 flex items-center gap-2">
-          {selected && (
+          {selected && selected.kind === "part" && (
             <span className="text-sm font-semibold text-primary">
-              {formatYuan(selected.sellPrice)}
+              {formatYuan(selected.part.sellPrice)}
             </span>
+          )}
+          {selected && selected.kind === "other" && (
+            <span className="text-sm text-muted-foreground">¥0</span>
           )}
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
@@ -189,36 +203,50 @@ function CategoryRow({
 
 function PartList({
   parts,
-  currentId,
+  current,
   onPick,
   onClear,
 }: {
   parts: PartDTO[];
-  currentId: string | undefined;
-  onPick: (p: PartDTO) => void;
+  current: Selection | undefined;
+  onPick: (sel: Selection) => void;
   onClear: () => void;
 }) {
-  if (parts.length === 0) {
-    return (
-      <div className="py-8 text-center text-muted-foreground">
-        该分类下还没有配件
-      </div>
-    );
-  }
+  const otherActive = current?.kind === "other";
+  const currentPartId = current?.kind === "part" ? current.part.id : null;
+
   return (
     <div className="space-y-2">
-      {currentId && (
+      {current && (
         <Button variant="outline" size="sm" onClick={onClear} className="w-full">
           取消选择
         </Button>
       )}
+
+      {/* 默认 "其他" 选项 — 价格 0、不入库 */}
+      <button
+        type="button"
+        onClick={() => onPick({ kind: "other" })}
+        className={`flex w-full items-start justify-between gap-3 rounded-md border p-3 text-left active:bg-accent ${
+          otherActive ? "border-primary bg-primary/5" : ""
+        }`}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="font-medium">其他</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            该分类不计入价格
+          </div>
+        </div>
+        <div className="font-semibold text-muted-foreground">¥0</div>
+      </button>
+
       {parts.map((p) => (
         <button
           key={p.id}
           type="button"
-          onClick={() => onPick(p)}
+          onClick={() => onPick({ kind: "part", part: p })}
           className={`flex w-full items-start justify-between gap-3 rounded-md border p-3 text-left active:bg-accent ${
-            p.id === currentId ? "border-primary bg-primary/5" : ""
+            p.id === currentPartId ? "border-primary bg-primary/5" : ""
           }`}
         >
           <div className="min-w-0 flex-1">

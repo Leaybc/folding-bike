@@ -80,9 +80,11 @@ export default async function OrderDetailPage({
                     </td>
                     <td className="py-2 pr-3 font-medium">
                       {it.brand}
-                      <span className="ml-1 font-normal text-muted-foreground">
-                        · {it.name}
-                      </span>
+                      {it.name && (
+                        <span className="ml-1 font-normal text-muted-foreground">
+                          · {it.name}
+                        </span>
+                      )}
                     </td>
                     <td className="py-2 pr-3">{formatYuan(it.costPrice)}</td>
                     <td className="py-2 pr-3">{formatYuan(it.sellPrice)}</td>
