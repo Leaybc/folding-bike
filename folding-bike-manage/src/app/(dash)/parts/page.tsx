@@ -9,6 +9,16 @@ export default async function PartsPage() {
     include: {
       parts: {
         orderBy: [{ active: "desc" }, { brand: "asc" }, { name: "asc" }],
+        include: {
+          options: {
+            orderBy: { sortOrder: "asc" },
+            include: { values: { orderBy: { sortOrder: "asc" } } },
+          },
+          variants: {
+            orderBy: { createdAt: "asc" },
+            include: { values: true },
+          },
+        },
       },
     },
   });
@@ -27,6 +37,24 @@ export default async function PartsPage() {
       weight: p.weight,
       note: p.note,
       active: p.active,
+      options: p.options.map((o) => ({
+        id: o.id,
+        name: o.name,
+        sortOrder: o.sortOrder,
+        values: o.values.map((v) => ({
+          id: v.id,
+          value: v.value,
+          sortOrder: v.sortOrder,
+        })),
+      })),
+      variants: p.variants.map((v) => ({
+        id: v.id,
+        costPrice: v.costPrice,
+        sellPrice: v.sellPrice,
+        weight: v.weight,
+        active: v.active,
+        optionValueIds: v.values.map((x) => x.optionValueId),
+      })),
     })),
   }));
 

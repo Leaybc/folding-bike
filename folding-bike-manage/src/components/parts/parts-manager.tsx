@@ -143,20 +143,62 @@ export function PartsManager({
                       </tr>
                     </thead>
                     <tbody>
-                      {cat.parts.map((p) => (
+                      {cat.parts.map((p) => {
+                        const hasVariants = p.variants.length > 0;
+                        const costs = hasVariants
+                          ? p.variants.map((v) => v.costPrice)
+                          : [p.costPrice];
+                        const sells = hasVariants
+                          ? p.variants.map((v) => v.sellPrice)
+                          : [p.sellPrice];
+                        const weights = hasVariants
+                          ? p.variants.map((v) => v.weight)
+                          : [p.weight];
+                        const fmtRange = (
+                          arr: number[],
+                          fmt: (n: number) => string,
+                        ) => {
+                          const min = Math.min(...arr);
+                          const max = Math.max(...arr);
+                          return min === max
+                            ? fmt(min)
+                            : `${fmt(min)} ~ ${fmt(max)}`;
+                        };
+                        return (
                         <tr key={p.id} className="border-t">
                           <td className="py-2 pr-3">
-                            <div className="font-medium">{p.brand}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium">{p.brand}</div>
+                              {hasVariants && (
+                                <span
+                                  className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                                  title={p.options
+                                    .map((o) => o.name)
+                                    .join(" / ")}
+                                >
+                                  {p.variants.length} 个规格
+                                </span>
+                              )}
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {p.name}
                             </div>
                           </td>
-                          <td className="py-2 pr-3">{formatYuan(p.costPrice)}</td>
-                          <td className="py-2 pr-3">{formatYuan(p.sellPrice)}</td>
-                          <td className="py-2 pr-3 text-emerald-600">
-                            {formatYuan(p.sellPrice - p.costPrice)}
+                          <td className="py-2 pr-3">
+                            {fmtRange(costs, formatYuan)}
                           </td>
-                          <td className="py-2 pr-3">{formatWeight(p.weight)}</td>
+                          <td className="py-2 pr-3">
+                            {fmtRange(sells, formatYuan)}
+                          </td>
+                          <td className="py-2 pr-3 text-emerald-600">
+                            {fmtRange(
+                              sells.map((s, i) => s - costs[i]),
+                              formatYuan,
+                            )}
+                          </td>
+                          <td className="py-2 pr-3">
+                            {fmtRange(weights, formatWeight)}
+                          </td>
                           <td className="py-2 pr-3 max-w-[14rem] truncate text-muted-foreground">
                             {p.note || "—"}
                           </td>
@@ -191,7 +233,8 @@ export function PartsManager({
                             </Button>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -79,11 +79,18 @@ export default async function OrderDetailPage({
                       {it.categoryName}
                     </td>
                     <td className="py-2 pr-3 font-medium">
-                      {it.brand}
-                      {it.name && (
-                        <span className="ml-1 font-normal text-muted-foreground">
-                          · {it.name}
-                        </span>
+                      <div>
+                        {it.brand}
+                        {it.name && (
+                          <span className="ml-1 font-normal text-muted-foreground">
+                            · {it.name}
+                          </span>
+                        )}
+                      </div>
+                      {it.variantLabel && (
+                        <div className="text-xs font-normal text-muted-foreground">
+                          {it.variantLabel}
+                        </div>
                       )}
                     </td>
                     <td className="py-2 pr-3">{formatYuan(it.costPrice)}</td>

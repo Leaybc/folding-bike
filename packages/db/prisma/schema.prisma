@@ -31,6 +31,7 @@ model Part {
   category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   brand      String
   name       String
+  // costPrice/sellPrice/weight 是"无规格时"的兜底价；有 variants 时以变体为准。
   costPrice  Int
   sellPrice  Int
   weight     Int
@@ -38,10 +39,63 @@ model Part {
   active     Boolean     @default(true)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  options    PartOption[]
+  variants   PartVariant[]
   orderItems OrderItem[]
 
   @@index([categoryId])
   @@index([active])
+}
+
+model PartOption {
+  id        String            @id @default(cuid())
+  partId    String
+  part      Part              @relation(fields: [partId], references: [id], onDelete: Cascade)
+  name      String
+  sortOrder Int               @default(0)
+  values    PartOptionValue[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([partId])
+}
+
+model PartOptionValue {
+  id            String             @id @default(cuid())
+  optionId      String
+  option        PartOption         @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  value         String
+  sortOrder     Int                @default(0)
+  variantValues PartVariantValue[]
+
+  @@index([optionId])
+}
+
+model PartVariant {
+  id         String             @id @default(cuid())
+  partId     String
+  part       Part               @relation(fields: [partId], references: [id], onDelete: Cascade)
+  costPrice  Int
+  sellPrice  Int
+  weight     Int
+  active     Boolean            @default(true)
+  values     PartVariantValue[]
+  orderItems OrderItem[]
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@index([partId])
+  @@index([active])
+}
+
+model PartVariantValue {
+  variantId     String
+  optionValueId String
+  variant       PartVariant     @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  optionValue   PartOptionValue @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+
+  @@id([variantId, optionValueId])
+  @@index([optionValueId])
 }
 
 model Order {
@@ -61,19 +115,24 @@ model Order {
 }
 
 model OrderItem {
-  id           String  @id @default(cuid())
+  id           String       @id @default(cuid())
   orderId      String
-  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order        Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
   partId       String?
-  part         Part?   @relation(fields: [partId], references: [id], onDelete: SetNull)
-  // Snapshot fields — preserve order history even if the part is later edited or deleted.
+  part         Part?        @relation(fields: [partId], references: [id], onDelete: SetNull)
+  variantId    String?
+  variant      PartVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  // Snapshot fields — preserve order history even if the part/variant is later edited or deleted.
   categoryName String
   brand        String
   name         String
+  // 规格快照，形如 "材质:钛合金 / 涂装:哑光黑"；无规格时为 null。
+  variantLabel String?
   costPrice    Int
   sellPrice    Int
   weight       Int
 
   @@index([orderId])
   @@index([partId])
+  @@index([variantId])
 }

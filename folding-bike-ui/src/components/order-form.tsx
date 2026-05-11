@@ -17,6 +17,11 @@ type ItemRow = {
   sel: Selection;
 };
 
+function priceOf(sel: Selection): number {
+  if (sel.kind !== "part") return 0;
+  return sel.variant?.sellPrice ?? sel.part.sellPrice;
+}
+
 export function OrderForm({
   selection,
   categories,
@@ -53,7 +58,11 @@ export function OrderForm({
       note: String(form.get("note") ?? "").trim() || null,
       items: items.map((i) =>
         i.sel.kind === "part"
-          ? { kind: "part" as const, partId: i.sel.part.id }
+          ? {
+              kind: "part" as const,
+              partId: i.sel.part.id,
+              ...(i.sel.variant ? { variantId: i.sel.variant.id } : {}),
+            }
           : { kind: "other" as const, categoryId: i.categoryId },
       ),
     };
@@ -93,19 +102,26 @@ export function OrderForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="rounded-md border bg-secondary/50 p-3">
         <div className="text-xs text-muted-foreground">配置预览</div>
-        <ul className="mt-2 space-y-1 text-sm">
+        <ul className="mt-2 space-y-1.5 text-sm">
           {items.map((i) => (
             <li key={i.categoryId} className="flex justify-between gap-3">
-              <span className="min-w-0 truncate">
+              <span className="min-w-0 flex-1">
                 <span className="text-muted-foreground">{i.categoryName}：</span>
-                {i.sel.kind === "part"
-                  ? `${i.sel.part.brand} ${i.sel.part.name}`
-                  : "其他"}
+                {i.sel.kind === "part" ? (
+                  <>
+                    {i.sel.part.brand} {i.sel.part.name}
+                    {i.sel.variantLabel && (
+                      <span className="ml-1 text-xs text-muted-foreground">
+                        （{i.sel.variantLabel}）
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  "其他"
+                )}
               </span>
               <span className="shrink-0 font-medium">
-                {i.sel.kind === "part"
-                  ? formatYuan(i.sel.part.sellPrice)
-                  : "¥0"}
+                {i.sel.kind === "part" ? formatYuan(priceOf(i.sel)) : "¥0"}
               </span>
             </li>
           ))}
