@@ -100,9 +100,11 @@ export function OrderForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="rounded-md border bg-secondary/50 p-3">
-        <div className="text-xs text-muted-foreground">配置预览</div>
-        <ul className="mt-2 space-y-1.5 text-sm">
+      <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] to-transparent p-4 shadow-sm">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-primary">
+          配置预览
+        </div>
+        <ul className="mt-2.5 space-y-1.5 text-sm">
           {items.map((i) => (
             <li key={i.categoryId} className="flex justify-between gap-3">
               <span className="min-w-0 flex-1">
@@ -120,17 +122,17 @@ export function OrderForm({
                   "其他"
                 )}
               </span>
-              <span className="shrink-0 font-medium">
+              <span className="shrink-0 font-medium tabular-nums">
                 {i.sel.kind === "part" ? formatYuan(priceOf(i.sel)) : "¥0"}
               </span>
             </li>
           ))}
         </ul>
-        <div className="mt-3 flex items-center justify-between border-t pt-2 text-sm">
-          <span className="text-muted-foreground">
+        <div className="mt-3 flex items-center justify-between border-t border-primary/15 pt-2.5">
+          <span className="text-xs text-muted-foreground">
             合计 {totals.count} 件 · {formatWeight(totals.weight)}
           </span>
-          <span className="text-base font-bold text-primary">
+          <span className="bg-brand-gradient bg-clip-text text-xl font-extrabold tracking-tight text-transparent tabular-nums">
             {formatYuan(totals.price)}
           </span>
         </div>
